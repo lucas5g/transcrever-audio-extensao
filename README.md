@@ -1,17 +1,17 @@
 # Audio Study Helper
 
-Extensao Chrome para transcrever audios locais abertos no navegador e, opcionalmente, converter a transcricao para frases no passado em ingles.
+Extensão Chrome para transcrever áudios locais abertos no navegador e, opcionalmente, converter a transcrição para frases no passado em inglês.
 
-O foco do MVP e ajudar no estudo de ingles com arquivos `.mp3` e `.ogg` abertos via `file://`.
+O foco do MVP é ajudar no estudo de inglês com arquivos `.mp3` e `.ogg` abertos via `file://`.
 
 ## Funcionalidades
 
-- Detecta audios locais `.mp3` e `.ogg` abertos no Chrome.
-- Exibe um painel flutuante na pagina do audio.
+- Detecta áudios locais `.mp3` e `.ogg` abertos no Chrome.
+- Exibe um painel flutuante na página do áudio.
 - Salva a Groq API key localmente com `chrome.storage.local`.
-- Transcreve audio usando `whisper-large-v3-turbo`.
+- Transcreve áudio usando `whisper-large-v3-turbo`.
 - Transcreve e converte o texto para passado usando `llama-3.3-70b-versatile`.
-- Mostra loading, erros e resultado sem recarregar a pagina.
+- Mostra loading, erros e resultado sem recarregar a página.
 
 ## Stack
 
@@ -26,7 +26,7 @@ O foco do MVP e ajudar no estudo de ingles com arquivos `.mp3` e `.ogg` abertos 
 - Node.js instalado
 - npm instalado
 - Chave de API da Groq
-- Google Chrome ou navegador compatível com extensoes Chrome MV3
+- Google Chrome ou navegador compatível com extensões Chrome MV3
 
 ## Instalação
 
@@ -40,7 +40,7 @@ npm install
 npm run build
 ```
 
-O build da extensao sera gerado na pasta `dist/`.
+O build da extensão será gerado na pasta `dist/`.
 
 ## Carregar No Chrome
 
@@ -48,7 +48,7 @@ O build da extensao sera gerado na pasta `dist/`.
 2. Ative `Developer mode`.
 3. Clique em `Load unpacked`.
 4. Selecione a pasta `dist/`.
-5. Na extensao carregada, habilite `Allow access to file URLs`.
+5. Na extensão carregada, habilite `Allow access to file URLs`.
 6. Abra um arquivo local `.mp3` ou `.ogg` no Chrome.
 
 Exemplo:
@@ -59,12 +59,12 @@ file:///home/lucas/Downloads/audio.ogg
 
 ## Como Usar
 
-1. Abra um audio local `.mp3` ou `.ogg` no Chrome.
-2. O painel `Audio Study Helper` aparecera no canto inferior direito.
+1. Abra um áudio local `.mp3` ou `.ogg` no Chrome.
+2. O painel `Audio Study Helper` aparecerá no canto inferior direito.
 3. Clique em `Configurar API Key`.
 4. Informe sua Groq API key e clique em `Salvar`.
-5. Clique em `Transcrever` para gerar apenas a transcricao.
-6. Clique em `Transcrever + Passado` para ver a transcricao original e a versao no passado.
+5. Clique em `Transcrever` para gerar apenas a transcrição.
+6. Clique em `Transcrever + Passado` para ver a transcrição original e a versão no passado.
 
 ## Scripts
 
@@ -78,7 +78,7 @@ Valida os tipos TypeScript.
 npm run build
 ```
 
-Gera a extensao em `dist/`.
+Gera a extensão em `dist/`.
 
 ```bash
 npm run dev
@@ -102,6 +102,6 @@ extension/
 ## Observações
 
 - A chave da Groq fica salva apenas localmente no navegador.
-- A extensao precisa da permissao `Allow access to file URLs` para funcionar com arquivos locais.
-- Este MVP nao possui backend.
-- O Chrome pode exigir recarregar a extensao apos cada novo build.
+- A extensão precisa da permissão `Allow access to file URLs` para funcionar com arquivos locais.
+- Este MVP não possui backend.
+- O Chrome pode exigir recarregar a extensão após cada novo build.
