@@ -1,0 +1,25 @@
+{
+  "manifest_version": 3,
+  "name": "Audio Study Helper",
+  "description": "Transcreve audios locais abertos no Chrome e converte frases para o passado em ingles.",
+  "version": "0.1.0",
+  "permissions": ["activeTab", "storage"],
+  "host_permissions": ["file:///*", "https://api.groq.com/*"],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["file:///*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["styles.css"],
+      "matches": ["file:///*"]
+    }
+  ]
+}
