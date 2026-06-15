@@ -1,13 +1,14 @@
 const SUPPORTED_AUDIO_EXTENSIONS = [".mp3", ".ogg"];
 const STORAGE_API_KEY = "groqApiKey";
 
-type BackgroundAction = "TRANSCRIBE_AUDIO" | "TRANSCRIBE_AUDIO_PAST_TENSE";
+type BackgroundAction = "TRANSCRIBE_AUDIO" | "TRANSCRIBE_AUDIO_PAST_TENSE" | "TRANSCRIBE_AUDIO_NEGATIVE";
 
 type BackgroundResponse = {
   ok: boolean;
   text?: string;
   transcription?: string;
   pastTenseText?: string;
+  negativeText?: string;
   error?: string;
 };
 
@@ -17,6 +18,7 @@ type PanelElements = {
   configureButton: HTMLButtonElement;
   transcribeButton: HTMLButtonElement;
   pastTenseButton: HTMLButtonElement;
+  negativeButton: HTMLButtonElement;
   status: HTMLDivElement;
   result: HTMLTextAreaElement;
 };
@@ -37,6 +39,7 @@ function createButton(label: string, className = "ash-button"): HTMLButtonElemen
 function setLoading(elements: PanelElements, loading: boolean): void {
   elements.transcribeButton.disabled = loading;
   elements.pastTenseButton.disabled = loading;
+  elements.negativeButton.disabled = loading;
   elements.configureButton.disabled = loading;
 }
 
@@ -48,6 +51,7 @@ function setStatus(elements: PanelElements, message: string, kind: "idle" | "loa
 function setActiveAction(elements: PanelElements, action: BackgroundAction): void {
   elements.transcribeButton.dataset.active = action === "TRANSCRIBE_AUDIO" ? "true" : "false";
   elements.pastTenseButton.dataset.active = action === "TRANSCRIBE_AUDIO_PAST_TENSE" ? "true" : "false";
+  elements.negativeButton.dataset.active = action === "TRANSCRIBE_AUDIO_NEGATIVE" ? "true" : "false";
 }
 
 function formatResult(action: BackgroundAction, response: BackgroundResponse): string {
@@ -55,7 +59,23 @@ function formatResult(action: BackgroundAction, response: BackgroundResponse): s
     return `Transcricao:\n${response.transcription}\n\nPassado:\n${response.pastTenseText}`;
   }
 
+  if (action === "TRANSCRIBE_AUDIO_NEGATIVE" && response.transcription && response.negativeText) {
+    return `Transcricao:\n${response.transcription}\n\nNegativo:\n${response.negativeText}`;
+  }
+
   return response.text || "";
+}
+
+function getLoadingMessage(action: BackgroundAction): string {
+  if (action === "TRANSCRIBE_AUDIO") {
+    return "Transcrevendo audio...";
+  }
+
+  if (action === "TRANSCRIBE_AUDIO_PAST_TENSE") {
+    return "Transcrevendo e convertendo...";
+  }
+
+  return "Transcrevendo e convertendo para negativo...";
 }
 
 function getStoredApiKey(): Promise<string> {
@@ -127,7 +147,7 @@ async function runTranscription(action: BackgroundAction, elements: PanelElement
   await saveApiKey(apiKey);
   setActiveAction(elements, action);
   setLoading(elements, true);
-  setStatus(elements, action === "TRANSCRIBE_AUDIO" ? "Transcrevendo audio..." : "Transcrevendo e convertendo...", "loading");
+  setStatus(elements, getLoadingMessage(action), "loading");
 
   try {
     const response = await sendBackgroundMessage(action, apiKey);
@@ -193,7 +213,8 @@ async function createPanel(): Promise<void> {
 
   const transcribeButton = createButton("Transcrever");
   const pastTenseButton = createButton("Transcrever + Passado");
-  actions.append(transcribeButton, pastTenseButton);
+  const negativeButton = createButton("Transcrever + Negativo");
+  actions.append(transcribeButton, pastTenseButton, negativeButton);
 
   const status = document.createElement("div");
   status.className = "ash-status";
@@ -213,6 +234,7 @@ async function createPanel(): Promise<void> {
     configureButton,
     transcribeButton,
     pastTenseButton,
+    negativeButton,
     status,
     result,
   };
@@ -240,6 +262,7 @@ async function createPanel(): Promise<void> {
 
   transcribeButton.addEventListener("click", () => void runTranscription("TRANSCRIBE_AUDIO", elements));
   pastTenseButton.addEventListener("click", () => void runTranscription("TRANSCRIBE_AUDIO_PAST_TENSE", elements));
+  negativeButton.addEventListener("click", () => void runTranscription("TRANSCRIBE_AUDIO_NEGATIVE", elements));
 }
 
 if (isSupportedAudioUrl(window.location.href)) {

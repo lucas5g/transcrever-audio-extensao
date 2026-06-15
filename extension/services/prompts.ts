@@ -12,3 +12,19 @@ Rules:
 Text:
 ${text}`;
 }
+
+export function buildNegativePrompt(text: string): string {
+  return `You are an English grammar assistant.
+
+Convert the following text to the negative form.
+
+Rules:
+- Keep simple English
+- Preserve original meaning as much as possible
+- Prefer contracted negative forms, such as didn't, don't, doesn't, isn't, aren't, wasn't, weren't, won't, can't
+- Return only the converted text
+- Do not explain anything
+
+Text:
+${text}`;
+}

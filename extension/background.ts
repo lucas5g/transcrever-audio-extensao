@@ -1,7 +1,7 @@
-import { transcribeAndConvertToPast, transcribeAudio } from "./services/groq";
+import { transcribeAndConvertToNegative, transcribeAndConvertToPast, transcribeAudio } from "./services/groq";
 
 type TranscriptionMessage = {
-  action: "TRANSCRIBE_AUDIO" | "TRANSCRIBE_AUDIO_PAST_TENSE";
+  action: "TRANSCRIBE_AUDIO" | "TRANSCRIBE_AUDIO_PAST_TENSE" | "TRANSCRIBE_AUDIO_NEGATIVE";
   apiKey?: string;
   audioUrl?: string;
 };
@@ -11,6 +11,7 @@ type BackgroundResponse = {
   text?: string;
   transcription?: string;
   pastTenseText?: string;
+  negativeText?: string;
   error?: string;
 };
 
@@ -20,7 +21,7 @@ function isTranscriptionMessage(message: unknown): message is TranscriptionMessa
   }
 
   const action = (message as TranscriptionMessage).action;
-  return action === "TRANSCRIBE_AUDIO" || action === "TRANSCRIBE_AUDIO_PAST_TENSE";
+  return action === "TRANSCRIBE_AUDIO" || action === "TRANSCRIBE_AUDIO_PAST_TENSE" || action === "TRANSCRIBE_AUDIO_NEGATIVE";
 }
 
 function getFilenameFromUrl(audioUrl: string): string {
@@ -77,6 +78,17 @@ async function handleTranscription(message: TranscriptionMessage): Promise<Backg
   if (message.action === "TRANSCRIBE_AUDIO") {
     const text = await transcribeAudio(message.apiKey, audioBlob, filename);
     return { ok: true, text };
+  }
+
+  if (message.action === "TRANSCRIBE_AUDIO_NEGATIVE") {
+    const result = await transcribeAndConvertToNegative(message.apiKey, audioBlob, filename);
+
+    return {
+      ok: true,
+      text: result.negativeText,
+      transcription: result.transcription,
+      negativeText: result.negativeText,
+    };
   }
 
   const result = await transcribeAndConvertToPast(message.apiKey, audioBlob, filename);
