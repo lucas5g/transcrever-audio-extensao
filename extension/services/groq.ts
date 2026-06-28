@@ -1,4 +1,4 @@
-import { buildNegativePrompt, buildPastTensePrompt } from "./prompts";
+import { buildInterrogativePrompt, buildNegativePrompt, buildPastTensePrompt } from "./prompts";
 
 const GROQ_API_BASE_URL = "https://api.groq.com/openai/v1";
 const TRANSCRIPTION_MODEL = "whisper-large-v3-turbo";
@@ -118,6 +118,39 @@ export async function convertToNegative(apiKey: string, text: string): Promise<s
   return convertedText;
 }
 
+export async function convertToInterrogative(apiKey: string, text: string): Promise<string> {
+  const response = await fetch(`${GROQ_API_BASE_URL}/chat/completions`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: PAST_TENSE_MODEL,
+      messages: [
+        {
+          role: "user",
+          content: buildInterrogativePrompt(text),
+        },
+      ],
+      temperature: 0.2,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(await parseGroqError(response));
+  }
+
+  const data = (await response.json()) as ChatCompletionResponse;
+  const convertedText = data.choices?.[0]?.message?.content?.trim();
+
+  if (!convertedText) {
+    throw new Error("A Groq nao retornou o texto convertido.");
+  }
+
+  return convertedText;
+}
+
 export type TranscribeAndConvertResult = {
   transcription: string;
   pastTenseText: string;
@@ -126,6 +159,11 @@ export type TranscribeAndConvertResult = {
 export type TranscribeAndConvertToNegativeResult = {
   transcription: string;
   negativeText: string;
+};
+
+export type TranscribeAndConvertToInterrogativeResult = {
+  transcription: string;
+  interrogativeText: string;
 };
 
 export async function transcribeAndConvertToPast(
@@ -148,4 +186,15 @@ export async function transcribeAndConvertToNegative(
   const negativeText = await convertToNegative(apiKey, transcription);
 
   return { transcription, negativeText };
+}
+
+export async function transcribeAndConvertToInterrogative(
+  apiKey: string,
+  audioBlob: Blob,
+  filename: string,
+): Promise<TranscribeAndConvertToInterrogativeResult> {
+  const transcription = await transcribeAudio(apiKey, audioBlob, filename);
+  const interrogativeText = await convertToInterrogative(apiKey, transcription);
+
+  return { transcription, interrogativeText };
 }

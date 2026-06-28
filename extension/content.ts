@@ -1,7 +1,11 @@
 const SUPPORTED_AUDIO_EXTENSIONS = [".mp3", ".ogg"];
 const STORAGE_API_KEY = "groqApiKey";
 
-type BackgroundAction = "TRANSCRIBE_AUDIO" | "TRANSCRIBE_AUDIO_PAST_TENSE" | "TRANSCRIBE_AUDIO_NEGATIVE";
+type BackgroundAction =
+  | "TRANSCRIBE_AUDIO"
+  | "TRANSCRIBE_AUDIO_PAST_TENSE"
+  | "TRANSCRIBE_AUDIO_NEGATIVE"
+  | "TRANSCRIBE_AUDIO_INTERROGATIVE";
 
 type BackgroundResponse = {
   ok: boolean;
@@ -9,6 +13,7 @@ type BackgroundResponse = {
   transcription?: string;
   pastTenseText?: string;
   negativeText?: string;
+  interrogativeText?: string;
   error?: string;
 };
 
@@ -19,6 +24,7 @@ type PanelElements = {
   transcribeButton: HTMLButtonElement;
   pastTenseButton: HTMLButtonElement;
   negativeButton: HTMLButtonElement;
+  interrogativeButton: HTMLButtonElement;
   status: HTMLDivElement;
   result: HTMLTextAreaElement;
 };
@@ -40,6 +46,7 @@ function setLoading(elements: PanelElements, loading: boolean): void {
   elements.transcribeButton.disabled = loading;
   elements.pastTenseButton.disabled = loading;
   elements.negativeButton.disabled = loading;
+  elements.interrogativeButton.disabled = loading;
   elements.configureButton.disabled = loading;
 }
 
@@ -52,6 +59,7 @@ function setActiveAction(elements: PanelElements, action: BackgroundAction): voi
   elements.transcribeButton.dataset.active = action === "TRANSCRIBE_AUDIO" ? "true" : "false";
   elements.pastTenseButton.dataset.active = action === "TRANSCRIBE_AUDIO_PAST_TENSE" ? "true" : "false";
   elements.negativeButton.dataset.active = action === "TRANSCRIBE_AUDIO_NEGATIVE" ? "true" : "false";
+  elements.interrogativeButton.dataset.active = action === "TRANSCRIBE_AUDIO_INTERROGATIVE" ? "true" : "false";
 }
 
 function formatResult(action: BackgroundAction, response: BackgroundResponse): string {
@@ -61,6 +69,10 @@ function formatResult(action: BackgroundAction, response: BackgroundResponse): s
 
   if (action === "TRANSCRIBE_AUDIO_NEGATIVE" && response.transcription && response.negativeText) {
     return `Transcricao:\n${response.transcription}\n\nNegativo:\n${response.negativeText}`;
+  }
+
+  if (action === "TRANSCRIBE_AUDIO_INTERROGATIVE" && response.transcription && response.interrogativeText) {
+    return `Transcricao:\n${response.transcription}\n\nInterrogativo:\n${response.interrogativeText}`;
   }
 
   return response.text || "";
@@ -73,6 +85,10 @@ function getLoadingMessage(action: BackgroundAction): string {
 
   if (action === "TRANSCRIBE_AUDIO_PAST_TENSE") {
     return "Transcrevendo e convertendo...";
+  }
+
+  if (action === "TRANSCRIBE_AUDIO_INTERROGATIVE") {
+    return "Transcrevendo e convertendo para interrogativo...";
   }
 
   return "Transcrevendo e convertendo para negativo...";
@@ -214,7 +230,8 @@ async function createPanel(): Promise<void> {
   const transcribeButton = createButton("Transcrever");
   const pastTenseButton = createButton("Transcrever + Passado");
   const negativeButton = createButton("Transcrever + Negativo");
-  actions.append(transcribeButton, pastTenseButton, negativeButton);
+  const interrogativeButton = createButton("Transcrever + Interrogativo");
+  actions.append(transcribeButton, pastTenseButton, negativeButton, interrogativeButton);
 
   const status = document.createElement("div");
   status.className = "ash-status";
@@ -235,6 +252,7 @@ async function createPanel(): Promise<void> {
     transcribeButton,
     pastTenseButton,
     negativeButton,
+    interrogativeButton,
     status,
     result,
   };
@@ -263,6 +281,7 @@ async function createPanel(): Promise<void> {
   transcribeButton.addEventListener("click", () => void runTranscription("TRANSCRIBE_AUDIO", elements));
   pastTenseButton.addEventListener("click", () => void runTranscription("TRANSCRIBE_AUDIO_PAST_TENSE", elements));
   negativeButton.addEventListener("click", () => void runTranscription("TRANSCRIBE_AUDIO_NEGATIVE", elements));
+  interrogativeButton.addEventListener("click", () => void runTranscription("TRANSCRIBE_AUDIO_INTERROGATIVE", elements));
 }
 
 if (isSupportedAudioUrl(window.location.href)) {
